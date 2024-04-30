@@ -592,9 +592,7 @@ func (s *Subtitles) Compact(minNum int) {
 			nNum := utf8.RuneCountInString(line.String())
 			if nNum < minNum {
 				deletedLIdx[j] = true
-				fmt.Printf("xtest: i:%d,j:%d, %#v\n", i, j, s.Items[i].Lines)
 				if nNum == 0 {
-					// fmt.Printf("xtest:%#v\n", s.Items[i].Lines)
 					continue
 				}
 				if j == 0 {

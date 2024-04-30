@@ -74,6 +74,8 @@ func ReadFromSRT(i io.Reader) (o *Subtitles, err error) {
 						}
 						if len(s.Lines[i].Items) == 0 {
 							s.Lines = s.Lines[:i]
+						} else {
+							break
 						}
 
 					}

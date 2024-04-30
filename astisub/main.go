@@ -19,6 +19,7 @@ var (
 	teletextPage     = flag.Int("p", 0, "the teletext page")
 	outputPath       = flag.String("o", "", "the output path")
 	syncDuration     = flag.Duration("s", 0, "the sync duration")
+	minNum           = flag.Int("c", 3, "min number of caption, if less than that, merge with previous line")
 )
 
 func main() {
@@ -86,6 +87,16 @@ func main() {
 		if err = sub.Write(*outputPath); err != nil {
 			log.Fatalf("%s while writing to %s", err, *outputPath)
 		}
+	case "compact":
+
+		// compact
+		sub.Compact(*minNum)
+
+		// Write
+		if err = sub.Write(*outputPath); err != nil {
+			log.Fatalf("%s while writing to %s", err, *outputPath)
+		}
+
 	case "merge":
 		// Validate second input path
 		if len(*inputPath.Slice) == 1 {

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/asticode/go-astikit"
 )
@@ -111,6 +112,15 @@ func NewSubtitles() *Subtitles {
 }
 
 // Item represents a text to show between 2 time boundaries with formatting
+/*
+&astisub.Item{Comments:[]string(nil), Index:3, EndAt:16740000000,
+InlineStyle:(*astisub.StyleAttributes)(nil),
+Lines:[]astisub.Line{astisub.Line{Items:[]astisub.LineItem{astisub.LineItem{InlineStyle:(*astisub.StyleAttributes)(nil),
+Style:(*astisub.Style)(nil), Text:"现在我希望你从来没有听到有人告诉"}}, VoiceName:""},
+astisub.Line{Items:[]astisub.LineItem{astisub.LineItem{InlineStyle:(*astisub.StyleAttributes)(nil),
+Style:(*astisub.Style)(nil), Text:"你你写了糟糕的代码，但如果你"}}, VoiceName:""}},
+Region:(*astisub.Region)(nil), StartAt:12100000000, Style:(*astisub.Style)(nil)}
+*/
 type Item struct {
 	Comments    []string
 	Index       int
@@ -565,6 +575,45 @@ func (s *Subtitles) Merge(i *Subtitles) {
 		if _, ok := s.Styles[style.ID]; !ok {
 			s.Styles[style.ID] = style
 		}
+	}
+}
+
+func (s *Subtitles) Compact(minNum int) {
+	lg := len(s.Items)
+	if lg < 2 || minNum < 1 {
+		return
+	}
+
+	for i := 1; i < lg; i++ {
+		var nlines []Line
+		deletedLIdx := make(map[int]bool)
+		for j := len(s.Items[i].Lines) - 1; j >= 0; j-- {
+			line := s.Items[i].Lines[j]
+			nNum := utf8.RuneCountInString(line.String())
+			if nNum < minNum {
+				deletedLIdx[j] = true
+				fmt.Printf("xtest: i:%d,j:%d, %#v\n", i, j, s.Items[i].Lines)
+				if nNum == 0 {
+					// fmt.Printf("xtest:%#v\n", s.Items[i].Lines)
+					continue
+				}
+				if j == 0 {
+					lnlg := len(s.Items[i-1].Lines)
+					oldTxt := s.Items[i-1].Lines[lnlg-1].Items[0].Text
+					s.Items[i-1].Lines[lnlg-1].Items[0].Text = oldTxt + line.String()
+				} else {
+					oldTxt := s.Items[i].Lines[j-1].Items[0].Text
+					s.Items[i].Lines[j-1].Items[0].Text = oldTxt + line.String()
+				}
+			}
+		}
+		for k := range s.Items[i].Lines {
+			if deletedLIdx[k] {
+				continue
+			}
+			nlines = append(nlines, s.Items[i].Lines[k])
+		}
+		s.Items[i].Lines = nlines
 	}
 }
 

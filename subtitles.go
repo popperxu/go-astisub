@@ -597,8 +597,10 @@ func (s *Subtitles) Compact(minNum int) {
 				}
 				if j == 0 {
 					lnlg := len(s.Items[i-1].Lines)
-					oldTxt := s.Items[i-1].Lines[lnlg-1].Items[0].Text
-					s.Items[i-1].Lines[lnlg-1].Items[0].Text = oldTxt + line.String()
+					if lnlg > 0 {
+						oldTxt := s.Items[i-1].Lines[lnlg-1].Items[0].Text
+						s.Items[i-1].Lines[lnlg-1].Items[0].Text = oldTxt + line.String()
+					}
 				} else {
 					oldTxt := s.Items[i].Lines[j-1].Items[0].Text
 					s.Items[i].Lines[j-1].Items[0].Text = oldTxt + line.String()

@@ -578,16 +578,39 @@ func (s *Subtitles) Merge(i *Subtitles) {
 	}
 }
 
-func linesCount(lines []Line) (count int) {
+func linesUTFCount(lines []Line) (count int) {
 	for _, l := range lines {
-		count += utf8.RuneCountInString(l.String())
+		lgUTF := utf8.RuneCountInString(l.String())
+
+		if engMainly(l) {
+			lgUTF = lgUTF / 2
+		}
+
+		count += lgUTF
 	}
 	return
 }
 
+func engMainly(l Line) bool {
+	lgChar := len(l.String())
+	lgUTF := utf8.RuneCountInString(l.String())
+
+	// mainly english chars
+	return float64(lgChar-lgUTF) < float64(lgChar)*0.1
+}
+
 func linesMerge(lines []Line) (res string) {
 	for _, l := range lines {
-		res += l.String()
+		if engMainly(l) {
+			// there is a space between english words
+			if res == "" {
+				res = l.String()
+			} else {
+				res += " " + l.String()
+			}
+		} else {
+			res += l.String()
+		}
 	}
 	return
 }
@@ -596,7 +619,7 @@ func (s *Subtitles) Compact(minNum, maxNum int) {
 	lg := len(s.Items)
 	if maxNum > 0 {
 		for i := 0; i < lg; i++ {
-			if linesCount(s.Items[i].Lines) <= maxNum {
+			if linesUTFCount(s.Items[i].Lines) <= maxNum {
 				nline := Line{
 					Items: []LineItem{
 						{Text: linesMerge(s.Items[i].Lines)},

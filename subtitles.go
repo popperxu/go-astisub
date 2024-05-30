@@ -578,8 +578,35 @@ func (s *Subtitles) Merge(i *Subtitles) {
 	}
 }
 
-func (s *Subtitles) Compact(minNum int) {
+func linesCount(lines []Line) (count int) {
+	for _, l := range lines {
+		count += utf8.RuneCountInString(l.String())
+	}
+	return
+}
+
+func linesMerge(lines []Line) (res string) {
+	for _, l := range lines {
+		res += l.String()
+	}
+	return
+}
+
+func (s *Subtitles) Compact(minNum, maxNum int) {
 	lg := len(s.Items)
+	if maxNum > 0 {
+		for i := 0; i < lg; i++ {
+			if linesCount(s.Items[i].Lines) <= maxNum {
+				nline := Line{
+					Items: []LineItem{
+						{Text: linesMerge(s.Items[i].Lines)},
+					},
+				}
+				s.Items[i].Lines = []Line{nline}
+			}
+		}
+	}
+
 	if lg < 2 || minNum < 1 {
 		return
 	}

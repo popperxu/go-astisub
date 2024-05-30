@@ -20,6 +20,7 @@ var (
 	outputPath       = flag.String("o", "", "the output path")
 	syncDuration     = flag.Duration("s", 0, "the sync duration")
 	minNum           = flag.Int("c", 3, "min number of caption, if less than that, merge with previous line")
+	maxNum           = flag.Int("lc", 40, "max number of one line, if count of multi lines less than it, merge these lines")
 )
 
 func main() {
@@ -88,9 +89,8 @@ func main() {
 			log.Fatalf("%s while writing to %s", err, *outputPath)
 		}
 	case "compact":
-
 		// compact
-		sub.Compact(*minNum)
+		sub.Compact(*minNum, *maxNum)
 
 		// Write
 		if err = sub.Write(*outputPath); err != nil {
